@@ -6,7 +6,7 @@ BASE_DIR="$(cd "$SCRIPT_DIR"/.. && pwd)"
 
 check-app() {
     APP="$1"
-    script -qec "$APP --version" > /dev/null ; return $?
+    script -O /tmp/typescript -qec "$APP --version" > /dev/null ; return $?
 }
 
 PKGS='cmake libv4l-dev'
