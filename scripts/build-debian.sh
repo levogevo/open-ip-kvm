@@ -37,7 +37,7 @@ cd "$BASE_DIR" || exit
 git submodule update --init --recursive -f
 cd "$BASE_DIR/mjpg-streamer/mjpg-streamer-experimental" || exit
 make -j$(nproc)
-# sudo make install
+sudo make install
 
 cd "$BASE_DIR" || exit
 npm install
