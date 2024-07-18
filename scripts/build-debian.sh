@@ -9,7 +9,7 @@ check-app() {
     script -O /tmp/typescript -qec "$APP --version" > /dev/null ; return $?
 }
 
-PKGS='cmake libv4l-dev'
+PKGS='cmake libv4l-dev unzip zip'
 
 USING_NALA=$(check-app nala ; echo $?)
 USING_APT=$(check-app apt ; echo $?)
