@@ -27,9 +27,9 @@ fi
 
 # node the "bad" way
 
-eval "$(cat ~/.bashrc | tail -n +10)"
+eval "$(cat ~/.bashrc | tail -n +20)"
 check-app fnm || curl -fsSL https://fnm.vercel.app/install | bash
-eval "$(cat ~/.bashrc | tail -n +10)"
+eval "$(cat ~/.bashrc | tail -n +20)"
 check-app node || fnm use --install-if-missing 20 
 
 # if mjpg isn't downloaded already
