@@ -10,11 +10,13 @@ SERVICE_PATH='/etc/systemd/system'
 cat <<EOF > "/tmp/$SERVICE_NAME"
 [Unit]
 Description=Start open-ip-kvm
+After=network.target
 
 [Service]
+Type=simple
 User=$USER
 WorkingDirectory=$HOME
-ExecStart=$RUN_SCRIPT
+ExecStart=/bin/bash --login -c "source $USER/.bashrc ; cd $SCRIPT_DIR && bash ./run.sh"
 
 [Install]
 WantedBy=multi-user.target
