@@ -12,6 +12,8 @@ cat <<EOF > "/tmp/$SERVICE_NAME"
 Description=Start open-ip-kvm
 
 [Service]
+User=$USER
+WorkingDirectory=$HOME
 ExecStart=$RUN_SCRIPT
 
 [Install]
