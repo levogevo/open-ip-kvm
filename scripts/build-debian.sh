@@ -42,4 +42,7 @@ sudo make install
 cd "$BASE_DIR" || exit
 npm install
 
+# for serial permissions
+sudo usermod -aG dialout $USER
+
 exit 0
