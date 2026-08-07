@@ -1,48 +1,58 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-THIS_FILE="$(readlink -f "$0")"
-SCRIPT_DIR="$(dirname "$THIS_FILE")"
-BASE_DIR="$(cd "$SCRIPT_DIR"/.. && pwd)"
+set -eu
 
-check-app() {
-    APP="$1"
-    script -O /tmp/typescript -qec "$APP --version" > /dev/null ; return $?
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+REPO_DIR="${SCRIPT_DIR}/.."
+
+# debian naming
+REQ_PKGS=(
+	gcc
+	g++
+	cmake
+	libv4l-dev
+	unzip
+	zip
+)
+
+missing_required_pkg() {
+	for pkg in "${REQ_PKGS[@]}"; do
+		dpkg -l "${pkg}" &>/dev/null || return 0
+	done
+
+	return 1
 }
 
-PKGS='cmake libv4l-dev unzip zip'
+have_cmd() {
+	for cmd in "$@"; do
+		command -v "${cmd}" &>/dev/null || return 1
+	done
+}
 
-USING_NALA=$(check-app nala ; echo $?)
-USING_APT=$(check-app apt ; echo $?)
-
-if [[ "$USING_NALA" == "0" ]]; then
-  # if nala fails, try apt
-  USING_APT="1"
-  echo "Installing with nala"
-  sudo nala install -y $PKGS || USING_APT="0"
-fi
-if [[ "$USING_APT" == "0" ]]; then
-  echo "Installing with apt"
-  sudo apt-get install -y $PKGS || exit 1
+if missing_required_pkg; then
+	sudo apt-get install -y "${REQ_PKGS[@]}"
 fi
 
-# node the "bad" way
+have_cmd fnm || curl -fsSL https://fnm.vercel.app/install | bash
+have_cmd node || fnm use --install-if-missing 20
 
-eval "$(cat ~/.bashrc | tail -n +20)"
-check-app fnm || curl -fsSL https://fnm.vercel.app/install | bash
-eval "$(cat ~/.bashrc | tail -n +20)"
-check-app node || fnm use --install-if-missing 20 
+if ! have_cmd mjpg_streamer; then
+	git -C "${REPO_DIR}" submodule update --init --recursive -f
+	cmake \
+		-DCMAKE_BUILD_TYPE=Release \
+		-B build \
+		-S "${REPO_DIR}/mjpg-streamer/mjpg-streamer-experimental"
+	cmake \
+		--build build \
+		--parallel "$(nproc)"
+	sudo cmake \
+		--install build
+fi
 
-# if mjpg isn't downloaded already
-cd "$BASE_DIR" || exit
-git submodule update --init --recursive -f
-cd "$BASE_DIR/mjpg-streamer/mjpg-streamer-experimental" || exit
-make -j$(nproc)
-sudo make install
-
-cd "$BASE_DIR" || exit
+cd "${REPO_DIR}" || exit
 npm install
 
 # for serial permissions
-sudo usermod -aG dialout $USER
-
-exit 0
+if [[ "$(groups)" != *'dialout'* ]]; then
+	sudo usermod -aG dialout "${USER}"
+fi
