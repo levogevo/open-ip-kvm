@@ -1,10 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-THIS_FILE="$(readlink -f "$0")"
-SCRIPT_DIR="$(dirname "$THIS_FILE")"
-BASE_DIR="$(cd "$SCRIPT_DIR"/.. && pwd)"
-eval "$(cat ~/.bashrc | tail -n +20)"
+set -eu
 
-cd "$BASE_DIR" || exit
+cd "$(dirname "$(readlink -f "$0")")/.."
 
 npm run start

@@ -1,30 +1,25 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-THIS_FILE="$(readlink -f "$0")"
-SCRIPT_DIR="$(dirname "$THIS_FILE")"
-RUN_SCRIPT="$SCRIPT_DIR/run.sh"
+set -eu
+
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+REPO_DIR="${SCRIPT_DIR}/.."
 
 SERVICE_NAME='open-ip-kvm.service'
 SERVICE_PATH='/etc/systemd/system'
 
-cat <<EOF > "/tmp/$SERVICE_NAME"
-[Unit]
+echo "[Unit]
 Description=Start open-ip-kvm
 After=network.target
 
 [Service]
 Type=simple
-User=$USER
-WorkingDirectory=$HOME
-ExecStart=/bin/bash --login -c "source $USER/.bashrc ; cd $SCRIPT_DIR && bash ./run.sh"
+User=${USER}
+WorkingDirectory=${HOME}
+ExecStart=${REPO_DIR}/scripts/run.sh
 
 [Install]
 WantedBy=multi-user.target
-EOF
+" | sudo tee "${SERVICE_PATH}/${SERVICE_NAME}"
 
-sudo cp "/tmp/$SERVICE_NAME" "$SERVICE_PATH/$SERVICE_NAME"
-sudo systemctl daemon-reload
-sudo systemctl enable "$SERVICE_NAME"
-sudo systemctl start "$SERVICE_NAME"
-
-exit 0
+sudo systemctl enable --now "${SERVICE_NAME}"
