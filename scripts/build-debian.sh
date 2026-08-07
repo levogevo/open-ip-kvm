@@ -13,6 +13,8 @@ REQ_PKGS=(
 	libv4l-dev
 	unzip
 	zip
+	nodejs
+	npm
 )
 
 missing_required_pkg() {
@@ -33,9 +35,6 @@ if missing_required_pkg; then
 	sudo apt-get install -y "${REQ_PKGS[@]}"
 fi
 
-have_cmd fnm || curl -fsSL https://fnm.vercel.app/install | bash
-have_cmd node || fnm use --install-if-missing 20
-
 if ! have_cmd mjpg_streamer; then
 	git -C "${REPO_DIR}" submodule update --init --recursive -f
 	cmake \
@@ -47,6 +46,12 @@ if ! have_cmd mjpg_streamer; then
 		--parallel "$(nproc)"
 	sudo cmake \
 		--install build
+fi
+
+if [[ "$(node --version)" != 'v20.'* ]]; then
+	have_cmd fnm || curl -fsSL https://fnm.vercel.app/install | bash
+	have_cmd fnm || source ~/.bashrc
+	fnm use --install-if-missing 20
 fi
 
 cd "${REPO_DIR}" || exit
